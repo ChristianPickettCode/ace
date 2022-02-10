@@ -1,11 +1,13 @@
 // scripts/run.js
 
-const { vrfCoordinator, linkToken, keyHash, linkFee, names, cardImages, numbers, suits, setImages } = require("./constants")
+const { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names, cardImages, numbers, suits, setImages } = require("./constants")
 
 async function main () {
     const House = await ethers.getContractFactory("House");
-
-    const house = await House.deploy(vrfCoordinator, linkToken, keyHash, names, cardImages, numbers, suits);
+    console.log("deploying...")
+    const house = await House.deploy(vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits);
+    console.log("....")
+    console.log(house.deployTransaction.hash)
     await house.deployed();
     console.log("Contract deployed to:", house.address);
 

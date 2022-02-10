@@ -25,8 +25,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     version: "0.8.4",
     optimizer: {
       enabled: true,
-      runs: 1
-    },
+      runs: 200
+    }
   },
   networks: {
     ropsten: {
@@ -36,6 +36,11 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     rinkeby: {
       url: process.env.STAGING_RINKEBY_ALCHEMY_KEY,
       accounts: [process.env.PRIVATE_KEY],
+      gasMultiplier: 1.4
     },
+    koven: {
+      url: process.env.STAGING_KOVEN_INFURA_KEY,
+      accounts: [process.env.PRIVATE_KEY],
+    }
   },
 };

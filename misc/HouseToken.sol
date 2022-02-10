@@ -2,11 +2,53 @@
 
 pragma solidity ^0.8.0;
 
-contract HouseFactory {}
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "./libraries/Base64.sol";
+
+contract HouseToken is ERC721 {
+
+    struct CardAttributes {
+        uint256 cardIndex;
+        string name;
+        string suit;
+        string number;
+        string imageURI;
+        uint256 tokenId;
+        uint256[] traits;
+    }
+
+    CardAttributes attributes;
+
+    constructor(
+        uint256 _cardIndex,
+        string memory _name,
+        string memory _suit,
+        string memory _number,
+        string memory _imageURI,
+        uint256 _tokenId,
+        uint256[] memory _traits
+    ) ERC721("House", "HOUSE") {
+
+        attributes.cardIndex = _cardIndex;
+        attributes.name = _name;
+        attributes.suit = _suit;
+        attributes.number = _number;
+        attributes.imageURI = _imageURI;
+        attributes.tokenId = _tokenId;
+        attributes.traits = _traits;
+
+    }
+
+    function mint(uint256 randomness) public {
+
+    }
+
+}
 
 // import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-// // Helper functions OpenZeppelin provides.
 // import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -16,7 +58,7 @@ contract HouseFactory {}
 
 // import "hardhat/console.sol";
 
-// contract HouseFactory is ERC721, VRFConsumerBase {
+// contract House is ERC721, VRFConsumerBase {
 //   struct CardAttributes {
 //     uint256 cardIndex;
 //     string name;
@@ -31,22 +73,14 @@ contract HouseFactory {}
 //   Counters.Counter private _tokenIds;
 
 //   CardAttributes[] defaultCards;
-
 //   mapping(uint256 => CardAttributes) public nftHolderAttributes;
-
 //   mapping(address => uint256[]) public nftHolders;
-
 //   event CardNFTMinted(address sender, uint256 tokenId, uint256 cardIndex);
-//   event SetNFTMinted(address sender, uint256 tokenId);
-
-//   bytes32 internal keyHash;
-//   uint256 internal fee;
-  
-//   uint256 public randomResult;
 
 //   mapping(bytes32 => address) public requestToSender;
 
-//   string[] setImages;
+//   bytes32 internal keyHash;
+//   uint256 internal fee;
 
 //   constructor(
 //     address _vrfCoordinator,
@@ -55,11 +89,8 @@ contract HouseFactory {}
 //     string[] memory _cardNames,
 //     string[] memory _cardImageURIs,
 //     string[] memory _cardNumbers,
-//     string[] memory _cardSuits,
-//     string[] memory _setImageURIs
-//   ) 
-//     ERC721("House", "HOUSE") 
-//     VRFConsumerBase(_vrfCoordinator, _link) {
+//     string[] memory _cardSuits
+//   ) ERC721("House", "HOUSE") VRFConsumerBase(_vrfCoordinator, _link) {
 
 //     uint256[] memory defaultTraits = new uint[](5);
 
@@ -84,13 +115,12 @@ contract HouseFactory {}
 //       );
 //     }
 //     _tokenIds.increment();
-
+    
 //     keyHash = _keyHash;
-//     fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
-//     setImages = _setImageURIs;
+//     fee = 0.1 * 10 ** 18;
 //   }
 
-//   function requestNewRandomCard() public returns (bytes32) {
+//   function mintCard() public returns (bytes32) {
 //     require(
 //         LINK.balanceOf(address(this)) >= fee,
 //         "Not enough LINK - fill contract with faucet"
@@ -130,16 +160,9 @@ contract HouseFactory {}
 //     );
 
 //     nftHolders[requestToSender[requestId]].push(newTokenId);
-
 //     _safeMint(requestToSender[requestId], newTokenId);
-
 //     _tokenIds.increment();
-
 //     emit CardNFTMinted(requestToSender[requestId], newTokenId, cardIndex);
-//   }
-
-//   function withdrawLink() external {
-//     LINK.transferFrom(address(this), msg.sender, LINK.balanceOf(address(this)));
 //   }
 
 //   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
@@ -174,112 +197,6 @@ contract HouseFactory {}
 //     );
 
 //     return output;
-//   }
-
-//   function mintCard() external {
-    
-//     uint256 newItemId = _tokenIds.current();
-//     uint256 cardIndex = pickRandomCardIndex(newItemId);
-//     uint256[] memory defaultTraits = new uint[](5);
-    
-//     _safeMint(msg.sender, newItemId);
-
-//     nftHolderAttributes[newItemId] = CardAttributes({
-//       cardIndex: cardIndex,
-//       name: defaultCards[cardIndex].name,
-//       suit: defaultCards[cardIndex].suit,
-//       number: defaultCards[cardIndex].number,
-//       imageURI: defaultCards[cardIndex].imageURI,
-//       tokenId: newItemId,
-//       traits: defaultTraits
-//     });
-
-//     console.log(
-//       "Minted NFT %s w/ tokenId %s and cardIndex %s",
-//       defaultCards[cardIndex].name,
-//       newItemId,
-//       cardIndex
-//     );
-
-//     nftHolders[msg.sender].push(newItemId);
-
-//     _tokenIds.increment();
-//     emit CardNFTMinted(msg.sender, newItemId, cardIndex);
-//   }
-
-//   function mintSet(uint256[] memory tokenIdList) public {
-//     validateSet(tokenIdList);
-//     uint256 suit = getCardSuit(tokenIdList[0]);
-
-//     uint256 newItemId = _tokenIds.current();
-//     _safeMint(msg.sender, newItemId);
-
-//     uint256[] memory defaultTraits = new uint[](5);
-//     string memory setName = string(abi.encodePacked("Set of " , nftHolderAttributes[tokenIdList[0]].suit));
-
-//     nftHolderAttributes[newItemId] = CardAttributes({
-//       cardIndex: 0,
-//       name: setName,
-//       suit: nftHolderAttributes[tokenIdList[0]].suit,
-//       number: "0",
-//       imageURI: setImages[suit],
-//       tokenId: newItemId,
-//       traits: defaultTraits
-//     });
-
-//     console.log(
-//       "A SET NFT w/ ID %s has been minted to %s",
-//       newItemId,
-//       msg.sender
-//     );
-//     _tokenIds.increment();
-//     emit SetNFTMinted(msg.sender, newItemId);
-
-//     for (uint256 index = 0; index < tokenIdList.length; index++) {
-//       console.log("Burning CARD with ID %s.", tokenIdList[index]);
-//       _burn(tokenIdList[index]);
-//     }
-//   }
-
-//   function getCardSuit(uint256 tokenId) private view returns (uint256) {
-//     uint256 cardIndex = nftHolderAttributes[tokenId].cardIndex;
-//     if (cardIndex < 13) {
-//       return 0;
-//     } else if (cardIndex < 26) {
-//       return 1;
-//     } else if (cardIndex < 39) {
-//       return 2;
-//     } else {
-//       return 3;
-//     }
-//   }
-
-//   function validateSet(uint256[] memory tokenIdList) private view {
-//     require(tokenIdList.length == 13, "Not 13 cards");
-//     bool[] memory valid = new bool[](13);
-//     for (uint256 index = 0; index < 13; index++) {
-//       valid[index] = false;
-//     }
-//     for (uint256 index = 0; index < tokenIdList.length; index++) {
-//       require(msg.sender == ownerOf(tokenIdList[index]), "Not all your tokens");
-//       uint256 suitIndex = nftHolderAttributes[tokenIdList[index]].cardIndex;
-//       valid[suitIndex % 13] = true;
-//     }
-//     for (uint256 index = 0; index < 13; index++) {
-//       require(valid[index], "Not a full set");
-//     }
-//   }
-
-//   function pickRandomCardIndex(uint256 tokenId) internal view returns (uint256) {
-//     uint256 rand = random(
-//       string(abi.encodePacked("CARD", Strings.toString(tokenId)))
-//     );
-//     rand = rand % defaultCards.length;
-//     return rand;
-//   }
-
-//   function random(string memory input) internal pure returns (uint256) {
-//     return uint256(keccak256(abi.encodePacked(input)));
 //   }
 
 //   function checkIfUserHasNFT() public view returns (CardAttributes[] memory) {

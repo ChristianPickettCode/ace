@@ -3,9 +3,15 @@ const cardImages = ["https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdf
 const names = ["Ace of Spades", "2 of Spades", "3 of Spades", "4 of Spades", "5 of Spades", "6 of Spades", "7 of Spades", "8 of Spades", "9 of Spades", "10 of Spades", "Jack of Spades", "Queen of Spades", "King of Spades", "Ace of Diamonds", "2 of Diamonds", "3 of Diamonds", "4 of Diamonds", "5 of Diamonds", "6 of Diamonds", "7 of Diamonds", "8 of Diamonds", "9 of Diamonds", "10 of Diamonds", "Jack of Diamonds", "Queen of Diamonds", "King of Diamonds", "King of Clubs", "Queen of Clubs", "Jack of Clubs", "10 of Clubs", "9 of Clubs", "8 of Clubs", "7 of Clubs", "6 of Clubs", "5 of Clubs", "4 of Clubs", "3 of Clubs", "2 of Clubs", "Ace of Clubs", "King of Hearts", "Queen of Hearts", "Jack of Hearts", "10 of Hearts", "9 of Hearts", "8 of Hearts", "7 of Hearts", "6 of Hearts", "5 of Hearts", "4 of Hearts", "3 of Hearts", "2 of Hearts", "Ace of Hearts"];
 const numbers = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "King", "Queen", "Jack", "10", "9", "8", "7", "6", "5", "4", "3", "2", "Ace", "King", "Queen", "Jack", "10", "9", "8", "7", "6", "5", "4", "3", "2", "Ace"];
 const suits = ["Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Spades", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Diamonds", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Clubs", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts", "Hearts"];
-const vrfCoordinator = "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B";
-const linkToken = "0x01BE23585060835E02B77ef475b0Cc51aA1e0709";
-const keyHash = "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311";
+
+const vrfCoordinatorRinkeby = "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B";
+const linkTokenRinkeby = "0x01BE23585060835E02B77ef475b0Cc51aA1e0709";
+const keyHashRinkeby = "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311";
+
+const vrfCoordinatorKoven = "0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9";
+const linkTokenKoven = "0xa36085F69e2889c224210F603D836748e7dC0088";
+const keyHashKoven = "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4";
+
 const linkFee = "0.1 * 10 ** 18";
 
 const setImages = [
@@ -15,4 +21,4 @@ const setImages = [
     "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/PWC1wBNbVZq2Yvq-MERd3PfA8ZHEFKOgYvW2wIJlTOg"
 ]
 
-module.exports = { vrfCoordinator, linkToken, keyHash, linkFee, names, cardImages, numbers, suits, setImages };
+module.exports = { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names, cardImages, numbers, suits, setImages };
