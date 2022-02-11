@@ -5,7 +5,7 @@ const { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names,
 async function main () {
     const House = await ethers.getContractFactory("House");
     console.log("deploying...")
-    const house = await House.deploy(vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits);
+    const house = await House.deploy(vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits, setImages);
     console.log("....")
     console.log(house.deployTransaction.hash)
     await house.deployed();

@@ -31,11 +31,12 @@ contract House is ERC721, VRFConsumerBase {
   mapping(uint256 => CardAttributes) public nftHolderAttributes;
   mapping(address => uint256[]) public nftHolders;
   event CardNFTMinted(address sender, uint256 tokenId, uint256 cardIndex);
-
+  event SetNFTMinted(address sender, uint256 tokenId);
   mapping(bytes32 => address) public requestToSender;
 
   bytes32 internal keyHash;
   uint256 internal fee;
+  string[] setImages;
 
   constructor(
     address _vrfCoordinator,
@@ -44,7 +45,8 @@ contract House is ERC721, VRFConsumerBase {
     string[] memory _cardNames,
     string[] memory _cardImageURIs,
     string[] memory _cardNumbers,
-    string[] memory _cardSuits
+    string[] memory _cardSuits,
+    string[] memory _setImageURIs
   ) ERC721("House", "HOUSE") VRFConsumerBase(_vrfCoordinator, _link) {
 
     uint256[] memory defaultTraits = new uint[](5);
@@ -61,24 +63,18 @@ contract House is ERC721, VRFConsumerBase {
           traits: defaultTraits
         })
       );
-
-      CardAttributes memory c = defaultCards[i];
-      console.log(
-        "Done initializing %s , img %s",
-        c.name,
-        c.imageURI
-      );
     }
     _tokenIds.increment();
     
     keyHash = _keyHash;
     fee = 0.1 * 10 ** 18;
+    setImages = _setImageURIs;
   }
 
   function mintCard() public returns (bytes32) {
     require(
         LINK.balanceOf(address(this)) >= fee,
-        "Not enough LINK - fill contract with faucet"
+        "Not enough LINK"
     );
     bytes32 requestId = requestRandomness(keyHash, fee);
     requestToSender[requestId] = msg.sender;
@@ -87,15 +83,15 @@ contract House is ERC721, VRFConsumerBase {
 
   function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
     uint256 newTokenId = _tokenIds.current();
-    uint256 cardIndex = ((randomness % defaultCards.length) % 18);
+    uint256 cardIndex = (randomness % defaultCards.length);
 
     uint256[] memory traits = new uint[](5);
     
-    traits[0] = (((randomness % 10000) / 100) % 18);
-    traits[1] = (((randomness % 1000000) / 10000) % 18);
-    traits[2] = (((randomness % 100000000) / 1000000) % 18);
-    traits[3] = (((randomness % 10000000000) / 100000000) % 18);
-    traits[4] = (((randomness % 1000000000000) / 10000000000) % 18);
+    traits[0] = ((randomness % 10000) / 100);
+    traits[1] = ((randomness % 1000000) / 10000);
+    traits[2] = ((randomness % 100000000) / 1000000);
+    traits[3] = ((randomness % 10000000000) / 100000000);
+    traits[4] = ((randomness % 1000000000000) / 10000000000);
 
     nftHolderAttributes[newTokenId] = CardAttributes({
       cardIndex: cardIndex,
@@ -106,13 +102,6 @@ contract House is ERC721, VRFConsumerBase {
       tokenId: newTokenId,
       traits: traits
     });
-
-    console.log(
-      "Minted NFT %s w/ RANDOM CL tokenId %s and cardIndex %s",
-      defaultCards[cardIndex].name,
-      newTokenId,
-      cardIndex
-    );
 
     nftHolders[requestToSender[requestId]].push(newTokenId);
     _safeMint(requestToSender[requestId], newTokenId);
@@ -169,10 +158,6 @@ contract House is ERC721, VRFConsumerBase {
     }
   }
 
-  function getAllDefaultCards() public view returns (CardAttributes[] memory) {
-    return defaultCards;
-  }
-
   function changeHolder( address from, address to, uint256 tokenId) private {
     for (uint256 i = 0; i < nftHolders[from].length; i++) {
       if (nftHolders[from][i] == tokenId) {
@@ -209,4 +194,54 @@ contract House is ERC721, VRFConsumerBase {
     _safeTransfer(from, to, tokenId, _data);
     changeHolder(from, to, tokenId);
   }
+
+  function mintSet(uint256[] memory tokenIdList) public {
+    validateSet(tokenIdList);
+    uint256 newItemId = _tokenIds.current();
+    _safeMint(msg.sender, newItemId);
+    nftHolderAttributes[newItemId] = CardAttributes({
+      cardIndex: 0,
+      name: string(abi.encodePacked("Set of " , nftHolderAttributes[tokenIdList[0]].suit)),
+      suit: nftHolderAttributes[tokenIdList[0]].suit,
+      number: "0",
+      imageURI: setImages[getSuit(tokenIdList[0])],
+      tokenId: newItemId,
+      traits: new uint[](5)
+    });
+    _tokenIds.increment();
+    emit SetNFTMinted(msg.sender, newItemId);
+
+    for (uint256 index = 0; index < tokenIdList.length; index++) {
+      _burn(tokenIdList[index]);
+    }
+  }
+
+  function getSuit(uint256 cardIndex) pure private returns (uint256) {
+    if (cardIndex < 13) {
+      return 0;
+    } else if (cardIndex < 26) {
+      return 1;
+    } else if (cardIndex < 39) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
+  function validateSet(uint256[] memory tokenIdList) private view {
+    require(tokenIdList.length == 13, "Not 13 cards");
+    bool[] memory valid = new bool[](13);
+    for (uint256 index = 0; index < 13; index++) {
+      valid[index] = false;
+    }
+    for (uint256 index = 0; index < tokenIdList.length; index++) {
+      require(msg.sender == ownerOf(tokenIdList[index]), "Not all your tokens");
+      valid[nftHolderAttributes[tokenIdList[index]].cardIndex % 13] = true;
+    }
+    for (uint256 index = 0; index < 13; index++) {
+      require(valid[index], "Not a full set");
+    }
+  }
 }
+
+  
