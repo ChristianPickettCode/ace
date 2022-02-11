@@ -2,29 +2,20 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "./libraries/Base64.sol";
+import "./chainlink/VRFConsumerBaseUpgradeable.sol";
+import "./HouseMetadata.sol";
 
 import "hardhat/console.sol";
 
-contract House is ERC721, VRFConsumerBase {
-  struct CardAttributes {
-    uint256 cardIndex;
-    string name;
-    string suit;
-    string number;
-    string imageURI;
-    uint256 tokenId;
-    uint256[] traits;
-  }
+contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
 
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
-  CardAttributes[] private defaultCards;
-  mapping(uint256 => CardAttributes) private nftHolderAttributes;
+  HouseMetadata.CardAttributes[] private defaultCards;
+  mapping(uint256 => HouseMetadata.CardAttributes) public nftHolderAttributes;
   mapping(bytes32 => address) private requestToSender;
 
   bytes32 internal keyHash;
@@ -36,7 +27,7 @@ contract House is ERC721, VRFConsumerBase {
   event SetNFTMinted(address sender, uint256 tokenId);
   event DeckNFTMinted(address sender, uint256 tokenId);
 
-  constructor(
+  function initialize(
     address _vrfCoordinator,
     address _link,
     bytes32 _keyHash,
@@ -46,12 +37,15 @@ contract House is ERC721, VRFConsumerBase {
     string[] memory _cardSuits,
     string[] memory _setImageURIs,
     string memory _deckImage
-  ) ERC721("House", "HOUSE") VRFConsumerBase(_vrfCoordinator, _link) {
+  ) public initializer {
+
+    __VRFConsumerBase_init(_vrfCoordinator, _link);
+    __ERC721_init("House", "HOUSE");
 
     for (uint256 i = 0; i < _cardNames.length; i++) {
       uint256[] memory t = new uint256[](5);
       defaultCards.push(
-        CardAttributes({
+        HouseMetadata.CardAttributes({
           cardIndex: i,
           name: _cardNames[i],
           suit: _cardSuits[i],
@@ -69,15 +63,15 @@ contract House is ERC721, VRFConsumerBase {
     deckImage = _deckImage;
   }
 
-  function mintCard() public returns (bytes32) {
-    require(
-        LINK.balanceOf(address(this)) >= fee,
-        "Not enough LINK"
-    );
-    bytes32 requestId = requestRandomness(keyHash, fee);
-    requestToSender[requestId] = msg.sender;
-    return requestId;
-  }
+  // function mintCard() public returns (bytes32) {
+  //   require(
+  //       LINK.balanceOf(address(this)) >= fee,
+  //       "Not enough LINK"
+  //   );
+  //   bytes32 requestId = requestRandomness(keyHash, fee);
+  //   requestToSender[requestId] = msg.sender;
+  //   return requestId;
+  // }
 
   function mint(uint256 cardIndex) public {
     uint256 newTokenId = _tokenIds.current();
@@ -85,7 +79,7 @@ contract House is ERC721, VRFConsumerBase {
     t[0] = 1;
     t[1] = 2;
     t[2] = 3;
-    nftHolderAttributes[newTokenId] = CardAttributes({
+    nftHolderAttributes[newTokenId] = HouseMetadata.CardAttributes({
       cardIndex: cardIndex,
       name: defaultCards[cardIndex].name,
       suit: defaultCards[cardIndex].suit,
@@ -108,7 +102,7 @@ contract House is ERC721, VRFConsumerBase {
     traits[1] = ((randomness % 1000000) / 10000);
     traits[2] = ((randomness % 100000000) / 1000000);
 
-    nftHolderAttributes[newTokenId] = CardAttributes({
+    nftHolderAttributes[newTokenId] = HouseMetadata.CardAttributes({
       cardIndex: cardIndex,
       name: defaultCards[cardIndex].name,
       suit: defaultCards[cardIndex].suit,
@@ -124,32 +118,10 @@ contract House is ERC721, VRFConsumerBase {
   }
 
   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-    CardAttributes memory cardAttributes = nftHolderAttributes[_tokenId];
-    string memory json = Base64.encode(
-      abi.encodePacked(
-        '{"name": "',
-        cardAttributes.name,
-        '", "description": "House of Cards", "image": "',
-        cardAttributes.imageURI,
-        '", "cardIndex": "',
-        Strings.toString(cardAttributes.cardIndex),
-        '", "attributes": [ { "trait_type": "Suit", "value": "',
-        cardAttributes.suit,
-        '"}, { "trait_type": "Number", "value": "',
-        cardAttributes.number,
-        '"}, { "trait_type": "Trait 1", "value": "',
-        Strings.toString(cardAttributes.traits[0]),
-        '"}, { "trait_type": "Trait 2", "value": "',
-        Strings.toString(cardAttributes.traits[1]),
-        '"}, { "trait_type": "Trait 3", "value": "',
-        Strings.toString(cardAttributes.traits[2]),
-        '"} ]}'
-      )
+    HouseMetadata.CardAttributes memory cardAttributes = nftHolderAttributes[_tokenId];
+    return string(
+      abi.encodePacked("data:application/json;base64,", HouseMetadata.tokenUri(cardAttributes))
     );
-    string memory output = string(
-      abi.encodePacked("data:application/json;base64,", json)
-    );
-    return output;
   }
 
   function mintSet(uint256[] memory tokenIdList) public {
@@ -157,7 +129,7 @@ contract House is ERC721, VRFConsumerBase {
     uint256 newItemId = _tokenIds.current();
     uint256 setIndex = getSuit(nftHolderAttributes[tokenIdList[0]].cardIndex);
     _safeMint(msg.sender, newItemId);
-    nftHolderAttributes[newItemId] = CardAttributes({
+    nftHolderAttributes[newItemId] = HouseMetadata.CardAttributes({
       cardIndex: setIndex,
       name: nftHolderAttributes[tokenIdList[0]].suit,
       suit: nftHolderAttributes[tokenIdList[0]].suit,
@@ -204,43 +176,44 @@ contract House is ERC721, VRFConsumerBase {
       for (uint256 index = 0; index < 13; index++) {
         require(valid[index], "Not Full");
       }
-    } else if(option == 1) {
-      require(tokenIdList.length == 4, "Not 4");
-      valid = new bool[](4);
-      for (uint256 index = 0; index < 4; index++) {
-        valid[index] = false;
-      }
-      for (uint256 index = 0; index < tokenIdList.length; index++) {
-        require(msg.sender == ownerOf(tokenIdList[index]), "Not owner");
-        valid[nftHolderAttributes[tokenIdList[index]].cardIndex % 4] = true;
-        traits[0] += nftHolderAttributes[tokenIdList[index]].traits[0];
-        traits[1] += nftHolderAttributes[tokenIdList[index]].traits[1];
-        traits[2] += nftHolderAttributes[tokenIdList[index]].traits[2];
-      }
-      for (uint256 index = 0; index < 4; index++) {
-        require(valid[index], "Not Full");
-      }
-    }
+    } 
+    // else if(option == 1) {
+    //   require(tokenIdList.length == 4, "Not 4");
+    //   valid = new bool[](4);
+    //   for (uint256 index = 0; index < 4; index++) {
+    //     valid[index] = false;
+    //   }
+    //   for (uint256 index = 0; index < tokenIdList.length; index++) {
+    //     require(msg.sender == ownerOf(tokenIdList[index]), "Not owner");
+    //     valid[nftHolderAttributes[tokenIdList[index]].cardIndex % 4] = true;
+    //     traits[0] += nftHolderAttributes[tokenIdList[index]].traits[0];
+    //     traits[1] += nftHolderAttributes[tokenIdList[index]].traits[1];
+    //     traits[2] += nftHolderAttributes[tokenIdList[index]].traits[2];
+    //   }
+    //   for (uint256 index = 0; index < 4; index++) {
+    //     require(valid[index], "Not Full");
+    //   }
+    // }
     return traits;
   }
 
-  function mintDeck(uint256[] memory tokenIdList) public {
-    uint256[] memory traits = validate(tokenIdList, 1);
-    uint256 newItemId = _tokenIds.current();
-    _safeMint(msg.sender, newItemId);
-    nftHolderAttributes[newItemId] = CardAttributes({
-      cardIndex: 0,
-      name: "Deck",
-      suit: "",
-      number: "",
-      imageURI: deckImage,
-      tokenId: newItemId,
-      traits: traits
-    });
-    _tokenIds.increment();
-    emit DeckNFTMinted(msg.sender, newItemId);
-    for (uint256 index = 0; index < tokenIdList.length; index++) {
-      _burn(tokenIdList[index]);
-    }
-  }
+  // function mintDeck(uint256[] memory tokenIdList) public {
+  //   uint256[] memory traits = validate(tokenIdList, 1);
+  //   uint256 newItemId = _tokenIds.current();
+  //   _safeMint(msg.sender, newItemId);
+  //   nftHolderAttributes[newItemId] = CardAttributes({
+  //     cardIndex: 0,
+  //     name: "Deck",
+  //     suit: "",
+  //     number: "",
+  //     imageURI: deckImage,
+  //     tokenId: newItemId,
+  //     traits: traits
+  //   });
+  //   _tokenIds.increment();
+  //   emit DeckNFTMinted(msg.sender, newItemId);
+  //   for (uint256 index = 0; index < tokenIdList.length; index++) {
+  //     _burn(tokenIdList[index]);
+  //   }
+  // }
 }

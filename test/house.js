@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 const { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names, cardImages, numbers, suits, setImages, deckImage } = require("../scripts/constants")
 
@@ -13,9 +13,12 @@ describe("House", function () {
   let addrs;
 
   beforeEach(async function() {
+    const HouseMetadata = await ethers.getContractFactory("HouseMetadata");
+    // const houseMetadata = await HouseMetadata.deploy();
     House = await ethers.getContractFactory("House");
     [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
-    houseContract = await House.deploy(vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits, setImages, deckImage);
+    houseContract = await upgrades.deployProxy(House, [vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits, setImages, deckImage]);
+    // houseContract = await House.deploy(vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, names, cardImages, numbers, suits, setImages, deckImage);
     await houseContract.deployed();
   })
 
