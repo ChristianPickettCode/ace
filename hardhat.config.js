@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require('@nomiclabs/hardhat-ethers');
 require("hardhat-gas-reporter");
 require('@openzeppelin/hardhat-upgrades');
+require('hardhat-contract-sizer');
 require("dotenv").config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -40,6 +41,10 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     },
     koven: {
       url: process.env.STAGING_KOVEN_INFURA_KEY,
+      accounts: [process.env.PRIVATE_KEY],
+    },
+    mumbai: {
+      url: process.env.POLYGON_MUMBAI_ALCHEMY_KEY,
       accounts: [process.env.PRIVATE_KEY],
     }
   },

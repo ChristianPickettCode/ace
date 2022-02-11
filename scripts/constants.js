@@ -15,10 +15,12 @@ const keyHashKoven = "0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc48
 const linkFee = "0.1 * 10 ** 18";
 
 const setImages = [
-    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/sGvRUDG2INB0IitBbe72p1T1PL0ObXu5S0Ygl4ssbd0",
-    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/Tqr_IBqtqtkjZNFJGWH2iE-YtWxTQb6NgTyIooB1tok",
-    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/l3dK7gEWqZr2bnlFB4nNOVTMB1CfbxdkCVAsk6v-U3c",
-    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/PWC1wBNbVZq2Yvq-MERd3PfA8ZHEFKOgYvW2wIJlTOg"
+    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/kuhv8mGATF-PJrYcQbJO2JpfSZUtRI0RWBxg19mx6vI",
+    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/GrYMDGNcDkcJ6te9LHLSUcZmlF7IDGO3EGuGJfyppcs",
+    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/sCML7HP08-Wq38146VIiLopwvcZxqrFJqvdaBF9Isdc",
+    "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/eqvslgm25wfEqcPaW0o6rZgaRFA19scKs30EvvcHkYc"
 ]
 
-module.exports = { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names, cardImages, numbers, suits, setImages };
+const deckImage = "https://5ywn6daenz6poefpjkgs3c2vdgtzsk2vevam6ap7mvc4443iwdfq.arweave.net/0AEXA6r7HO3eqGZ6eRImWaWn-eJhsx2T42iieCOVp9M";
+
+module.exports = { vrfCoordinatorRinkeby, linkTokenRinkeby, keyHashRinkeby, linkFee, names, cardImages, numbers, suits, setImages, deckImage };
