@@ -6,16 +6,14 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./chainlink/VRFConsumerBaseUpgradeable.sol";
-import "./HouseMetadata.sol";
-
-import "hardhat/console.sol";
+import "./Metadata.sol";
 
 contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
 
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
-  HouseMetadata.CardAttributes[] private defaultCards;
-  mapping(uint256 => HouseMetadata.CardAttributes) public nftHolderAttributes;
+  Metadata.Attributes[] private defaultCards;
+  mapping(uint256 => Metadata.Attributes) public nftHolderAttributes;
   mapping(bytes32 => address) private requestToSender;
 
   bytes32 internal keyHash;
@@ -45,7 +43,7 @@ contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
     for (uint256 i = 0; i < _cardNames.length; i++) {
       uint256[] memory t = new uint256[](5);
       defaultCards.push(
-        HouseMetadata.CardAttributes({
+        Metadata.Attributes({
           cardIndex: i,
           name: _cardNames[i],
           suit: _cardSuits[i],
@@ -79,7 +77,7 @@ contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
     t[0] = 1;
     t[1] = 2;
     t[2] = 3;
-    nftHolderAttributes[newTokenId] = HouseMetadata.CardAttributes({
+    nftHolderAttributes[newTokenId] = Metadata.Attributes({
       cardIndex: cardIndex,
       name: defaultCards[cardIndex].name,
       suit: defaultCards[cardIndex].suit,
@@ -102,7 +100,7 @@ contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
     traits[1] = ((randomness % 1000000) / 10000);
     traits[2] = ((randomness % 100000000) / 1000000);
 
-    nftHolderAttributes[newTokenId] = HouseMetadata.CardAttributes({
+    nftHolderAttributes[newTokenId] = Metadata.Attributes({
       cardIndex: cardIndex,
       name: defaultCards[cardIndex].name,
       suit: defaultCards[cardIndex].suit,
@@ -118,32 +116,32 @@ contract House is Initializable, ERC721Upgradeable, VRFConsumerBaseUpgradeable {
   }
 
   function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-    HouseMetadata.CardAttributes memory cardAttributes = nftHolderAttributes[_tokenId];
+    Metadata.Attributes memory cardAttributes = nftHolderAttributes[_tokenId];
     return string(
-      abi.encodePacked("data:application/json;base64,", HouseMetadata.tokenUri(cardAttributes))
+      abi.encodePacked("data:application/json;base64,", Metadata.tokenUri(cardAttributes))
     );
   }
 
-  function mintSet(uint256[] memory tokenIdList) public {
-    uint256[] memory traits = validate(tokenIdList, 0);
-    uint256 newItemId = _tokenIds.current();
-    uint256 setIndex = getSuit(nftHolderAttributes[tokenIdList[0]].cardIndex);
-    _safeMint(msg.sender, newItemId);
-    nftHolderAttributes[newItemId] = HouseMetadata.CardAttributes({
-      cardIndex: setIndex,
-      name: nftHolderAttributes[tokenIdList[0]].suit,
-      suit: nftHolderAttributes[tokenIdList[0]].suit,
-      number: "",
-      imageURI: setImages[setIndex],
-      tokenId: newItemId,
-      traits: traits
-    });
-    _tokenIds.increment();
-    emit SetNFTMinted(msg.sender, newItemId);
-    for (uint256 index = 0; index < tokenIdList.length; index++) {
-      _burn(tokenIdList[index]);
-    }
-  }
+  // function mintSet(uint256[] memory tokenIdList) public {
+  //   uint256[] memory traits = validate(tokenIdList, 0);
+  //   uint256 newItemId = _tokenIds.current();
+  //   uint256 setIndex = getSuit(nftHolderAttributes[tokenIdList[0]].cardIndex);
+  //   _safeMint(msg.sender, newItemId);
+  //   nftHolderAttributes[newItemId] = Metadata.Attributes({
+  //     cardIndex: setIndex,
+  //     name: nftHolderAttributes[tokenIdList[0]].suit,
+  //     suit: nftHolderAttributes[tokenIdList[0]].suit,
+  //     number: "",
+  //     imageURI: setImages[setIndex],
+  //     tokenId: newItemId,
+  //     traits: traits
+  //   });
+  //   _tokenIds.increment();
+  //   emit SetNFTMinted(msg.sender, newItemId);
+  //   for (uint256 index = 0; index < tokenIdList.length; index++) {
+  //     _burn(tokenIdList[index]);
+  //   }
+  // }
 
   function getSuit(uint256 cardIndex) pure private returns (uint256) {
     if (cardIndex < 13) {

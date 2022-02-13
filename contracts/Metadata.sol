@@ -5,8 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./libraries/Base64.sol";
 
-library HouseMetadata {
-    struct CardAttributes {
+library Metadata {
+    struct Attributes {
         uint256 cardIndex;
         string name;
         string suit;
@@ -16,7 +16,7 @@ library HouseMetadata {
         uint256[] traits;
     }
 
-    function tokenUri(CardAttributes memory cardAttributes) pure internal returns (string memory) {
+    function tokenUri(Attributes memory cardAttributes) pure internal returns (string memory) {
         return Base64.encode(
             abi.encodePacked(
                 '{"name": "',
